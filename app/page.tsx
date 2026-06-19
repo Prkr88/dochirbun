@@ -175,13 +175,6 @@ export default function Home() {
       <section className="mx-auto grid w-full max-w-4xl content-start gap-5">
         <AuthBar isLoading={isLoading} onSignIn={signIn} onSignOut={signOutUser} user={user} />
         {status ? <p className="rounded-md bg-white p-3 text-sm font-bold text-steel">{status}</p> : null}
-        <RecentReports
-          currentUserId={user?.uid}
-          isRating={isRating}
-          onRate={handleRate}
-          ratingSummaries={ratingSummaries}
-          reports={reports}
-        />
         <div className="flex justify-center">
           <button
             onClick={() => {
@@ -221,6 +214,13 @@ export default function Home() {
             </section>
           )
         ) : null}
+        <RecentReports
+          currentUserId={user?.uid}
+          isRating={isRating}
+          onRate={handleRate}
+          ratingSummaries={ratingSummaries}
+          reports={reports}
+        />
       </section>
     </main>
   );
