@@ -1,0 +1,112 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isReportOwner() {
+      return isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidString(field, min, max) {
+      return field is string && field.size() >= min && field.size() <= max;
+    }
+
+    function isOptionalString(fieldName, max) {
+      return !request.resource.data.keys().hasAny([fieldName])
+        || request.resource.data[fieldName] == null
+        || (request.resource.data[fieldName] is string && request.resource.data[fieldName].size() <= max);
+    }
+
+    function isOneOf(field, values) {
+      return field is string && field in values;
+    }
+
+    function hasValidString(fieldName, min, max) {
+      return request.resource.data.keys().hasAny([fieldName])
+        && isValidString(request.resource.data[fieldName], min, max);
+    }
+
+    function isValidPoopReport() {
+      return request.resource.data.keys().hasOnly([
+        'userId',
+        'userEmail',
+        'userPhotoUrl',
+        'reporterName',
+        'serviceNumber',
+        'role',
+        'facility',
+        'improvisedFacilityDescription',
+        'sittingTime',
+        'peeTiming',
+        'entertainment',
+        'entertainmentOther',
+        'color',
+        'colorOther',
+        'foodResidue',
+        'foodResidueOther',
+        'stoolCharacter',
+        'dropStyle',
+        'dropSound',
+        'exitCharacter',
+        'smell',
+        'smellOther',
+        'paperSquares',
+        'rating',
+        'aftermath',
+        'notes',
+        'imageUrl',
+        'createdAt'
+      ])
+      && request.resource.data.userId == request.auth.uid
+      && request.resource.data.userEmail == request.auth.token.email
+      && isOptionalString('userPhotoUrl', 2000)
+      && isValidString(request.resource.data.reporterName, 2, 80)
+      && isOptionalString('serviceNumber', 40)
+      && isValidString(request.resource.data.role, 2, 80)
+      && isOneOf(request.resource.data.facility, ['organized-toilet', 'chemical-toilet', 'field-squat', 'improvised'])
+      && isOptionalString('improvisedFacilityDescription', 240)
+      && (request.resource.data.facility != 'improvised' || hasValidString('improvisedFacilityDescription', 1, 240))
+      && isOneOf(request.resource.data.sittingTime, ['up-to-2', 'up-to-5', 'up-to-15', 'over-15'])
+      && isOneOf(request.resource.data.peeTiming, ['before', 'during', 'after', 'none'])
+      && isOneOf(request.resource.data.entertainment, ['none', 'phone', 'newspaper', 'book', 'other'])
+      && isOptionalString('entertainmentOther', 120)
+      && (request.resource.data.entertainment != 'other' || hasValidString('entertainmentOther', 1, 120))
+      && isOneOf(request.resource.data.color, ['green', 'yellowish', 'light-brown', 'dark-brown', 'black', 'other'])
+      && isOptionalString('colorOther', 80)
+      && (request.resource.data.color != 'other' || hasValidString('colorOther', 1, 80))
+      && isOneOf(request.resource.data.foodResidue, ['none', 'corn', 'tomato', 'leaves', 'other'])
+      && isOptionalString('foodResidueOther', 120)
+      && (request.resource.data.foodResidue != 'other' || hasValidString('foodResidueOther', 1, 120))
+      && isOneOf(request.resource.data.stoolCharacter, ['single-lump', 'multiple-lumps', 'liquid', 'foamy-flow', 'mixed'])
+      && isOneOf(request.resource.data.dropStyle, ['direct-hit', 'long-snake', 'porcelain-slide-marked', 'porcelain-slide-clean', 'full-bowl-spray'])
+      && isOneOf(request.resource.data.dropSound, ['plooysht', 'plaaank', 'troyschranztz', 'tink-tink-tink'])
+      && isOneOf(request.resource.data.exitCharacter, ['failed-strain', 'sweaty-effort', 'free-flow', 'unnoticed'])
+      && isOneOf(request.resource.data.smell, ['none', 'typical', 'unbearable', 'other'])
+      && isOptionalString('smellOther', 120)
+      && (request.resource.data.smell != 'other' || hasValidString('smellOther', 1, 120))
+      && isOneOf(request.resource.data.paperSquares, ['magic', 'up-to-8', 'up-to-15', 'up-to-30', 'full-roll', 'no-paper'])
+      && request.resource.data.rating is int
+      && request.resource.data.rating >= 1
+      && request.resource.data.rating <= 5
+      && isOneOf(request.resource.data.aftermath, ['soap-and-water', 'alcohol-gel', 'water-only', 'pants-wipe', 'prefer-not'])
+      && isValidString(request.resource.data.notes, 2, 2000)
+      && isOptionalString('imageUrl', 2000)
+      && request.resource.data.createdAt == request.time;
+    }
+
+    match /reports/{reportId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidPoopReport();
+      allow update, delete: if isReportOwner();
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+  }
+}

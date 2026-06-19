@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-app: "Arial";
+  --surface: #fffdf8;
+  --text: #161616;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--surface);
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(243, 179, 61, 0.16), transparent 28rem),
+    linear-gradient(135deg, #fffdf8 0%, #f6f9f4 52%, #f8fbff 100%);
+  color: var(--text);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: #f3b33d;
+  color: #161616;
+}
