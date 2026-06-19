@@ -100,7 +100,12 @@ export default function Home() {
       ]);
       setStatus("הדו\"ח נשמר בהצלחה.");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "שמירת הדו\"ח נכשלה.");
+      const message = error instanceof Error ? error.message : "שמירת הדו\"ח נכשלה.";
+      setStatus(
+        message.includes("storage") || message.includes("Storage")
+          ? "שמירת התמונה נכשלה כי Firebase Storage עדיין לא פעיל. אפשר לשלוח דו\"ח בלי תמונה או להפעיל Storage בהמשך."
+          : message
+      );
     } finally {
       setIsSubmitting(false);
     }
