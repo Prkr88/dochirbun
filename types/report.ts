@@ -73,3 +73,15 @@ export interface LeaderboardEntry {
   reportCount: number;
   averageRating: number;
 }
+
+export interface ReportUserRating {
+  reportId: string;
+  userId: string;
+  rating: ReportRating;
+}
+
+export interface ReportRatingSummary {
+  average: number;
+  count: number;
+  currentUserRating?: ReportRating;
+}

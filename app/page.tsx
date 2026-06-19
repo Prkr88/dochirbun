@@ -1,73 +1,64 @@
 "use client";
 
 import Image from "next/image";
-import { ClipboardList } from "lucide-react";
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ClipboardList, Trophy } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 import { AuthBar } from "@/components/auth-bar";
-import { Leaderboard } from "@/components/leaderboard";
 import { RecentReports } from "@/components/recent-reports";
 import { ReportForm } from "@/components/report-form";
 import { useAuth } from "@/hooks/use-auth";
-import { calculateLeaderboard } from "@/lib/leaderboard/calculate-leaderboard";
-import { createReport } from "@/services/reports";
-import type { NewReportInput, Report } from "@/types/report";
-
-const seededReports: Report[] = [
-  {
-    id: "seed-1",
-    userId: "matan",
-    userEmail: "matan@example.com",
-    reporterName: "מתן",
-    role: "מתעד שטח",
-    facility: "organized-toilet",
-    sittingTime: "up-to-5",
-    peeTiming: "during",
-    entertainment: "phone",
-    color: "dark-brown",
-    foodResidue: "corn",
-    stoolCharacter: "single-lump",
-    dropStyle: "direct-hit",
-    dropSound: "plaaank",
-    exitCharacter: "free-flow",
-    smell: "typical",
-    paperSquares: "magic",
-    rating: 5,
-    aftermath: "soap-and-water",
-    notes: "אירוע נקי, מדויק, עם תחושת סגירה מלאה.",
-    createdAt: "2026-06-19T08:00:00.000Z"
-  },
-  {
-    id: "seed-2",
-    userId: "noya",
-    userEmail: "noya@example.com",
-    reporterName: "נועה",
-    role: "אחראית משמרת",
-    facility: "chemical-toilet",
-    sittingTime: "up-to-15",
-    peeTiming: "before",
-    entertainment: "none",
-    color: "light-brown",
-    foodResidue: "none",
-    stoolCharacter: "multiple-lumps",
-    dropStyle: "porcelain-slide-marked",
-    dropSound: "tink-tink-tink",
-    exitCharacter: "sweaty-effort",
-    smell: "unbearable",
-    paperSquares: "up-to-30",
-    rating: 2,
-    aftermath: "alcohol-gel",
-    notes: "החוויה תועדה לטובת ההיסטוריה בלבד.",
-    createdAt: "2026-06-19T09:30:00.000Z"
-  }
-];
+import { seededReports } from "@/lib/demo-reports";
+import { createReport, listRatingsForReports, listRecentReports, rateReport } from "@/services/reports";
+import type { NewReportInput, Report, ReportRating, ReportRatingSummary } from "@/types/report";
 
 export default function Home() {
   const { isLoading, signIn, signOutUser, user } = useAuth();
   const [reports, setReports] = useState<Report[]>(seededReports);
+  const [ratingSummaries, setRatingSummaries] = useState<Record<string, ReportRatingSummary>>({});
   const [status, setStatus] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const leaderboard = useMemo(() => calculateLeaderboard(reports), [reports]);
+  const [isRating, setIsRating] = useState(false);
+
+  const refreshRatings = useCallback(
+    async (nextReports: Report[]) => {
+      const summaries = await listRatingsForReports(
+        nextReports.map((report) => report.id),
+        user?.uid
+      );
+      setRatingSummaries(summaries);
+    },
+    [user?.uid]
+  );
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadReports() {
+      try {
+        const nextReports = await listRecentReports();
+
+        if (!isActive) {
+          return;
+        }
+
+        const visibleReports = nextReports.length > 0 ? nextReports : seededReports;
+        setReports(visibleReports);
+        await refreshRatings(visibleReports);
+      } catch {
+        if (isActive) {
+          setReports(seededReports);
+        }
+      }
+    }
+
+    loadReports();
+
+    return () => {
+      isActive = false;
+    };
+  }, [refreshRatings]);
 
   async function handleSubmit(input: NewReportInput, imageFile?: File) {
     if (!user?.email) {
@@ -87,7 +78,7 @@ export default function Home() {
         userPhotoUrl: user.photoURL ?? undefined
       });
 
-      setReports((current) => [
+      const nextReports = [
         {
           id: docRef.id,
           userId: user.uid,
@@ -96,8 +87,11 @@ export default function Home() {
           createdAt: new Date().toISOString(),
           ...input
         },
-        ...current
-      ]);
+        ...reports
+      ];
+
+      setReports(nextReports);
+      await refreshRatings(nextReports);
       setStatus("הדו\"ח נשמר בהצלחה.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "שמירת הדו\"ח נכשלה.";
@@ -108,6 +102,36 @@ export default function Home() {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleRate(reportId: string, rating: ReportRating) {
+    if (!user) {
+      setStatus("צריך להתחבר עם Google כדי לדרג דו\"ח.");
+      return;
+    }
+
+    setIsRating(true);
+    setStatus(undefined);
+
+    try {
+      if (reportId.startsWith("seed-")) {
+        setRatingSummaries((current) => ({
+          ...current,
+          [reportId]: {
+            average: rating,
+            count: 1,
+            currentUserRating: rating
+          }
+        }));
+      } else {
+        await rateReport(reportId, user.uid, rating);
+        await refreshRatings(reports);
+      }
+    } catch {
+      setStatus("שמירת הדירוג נכשלה. נסה שוב.");
+    } finally {
+      setIsRating(false);
     }
   }
 
@@ -123,6 +147,13 @@ export default function Home() {
           <p className="mt-4 max-w-2xl text-lg leading-8 text-steel">
             מערכת הומוריסטית לתיעוד חירבונים בלבד, עם דירוג, פרטים טכניים, ותמונה אופציונלית.
           </p>
+          <Link
+            href="/leaderboard"
+            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-md border border-ink/25 bg-white px-4 font-bold text-steel"
+          >
+            <Trophy className="size-5" />
+            לוח המדווחים
+          </Link>
         </div>
         <Image
           src="/receipt-stack.svg"
@@ -134,39 +165,38 @@ export default function Home() {
         />
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem]">
-        <section className="grid content-start gap-5">
-          <AuthBar isLoading={isLoading} onSignIn={signIn} onSignOut={signOutUser} user={user} />
-          {status ? <p className="rounded-md bg-white p-3 text-sm font-bold text-steel">{status}</p> : null}
-          <div>
-            <h2 className="text-2xl font-black">דו&quot;ח חדש</h2>
-            <p className="mt-2 text-sm text-steel">כל השדות המסומנים נדרשים. הטופס מיועד לחירבונים בלבד.</p>
-          </div>
+      <section className="mx-auto grid w-full max-w-4xl content-start gap-5">
+        <AuthBar isLoading={isLoading} onSignIn={signIn} onSignOut={signOutUser} user={user} />
+        {status ? <p className="rounded-md bg-white p-3 text-sm font-bold text-steel">{status}</p> : null}
+        <div>
+          <h2 className="text-2xl font-black">דו&quot;ח חדש</h2>
+          <p className="mt-2 text-sm text-steel">כל השדות המסומנים נדרשים. הטופס מיועד לחירבונים בלבד.</p>
+        </div>
+        {user ? (
           <ReportForm isAuthenticated={Boolean(user)} isSubmitting={isSubmitting} onSubmit={handleSubmit} />
-          <RecentReports reports={reports} />
-        </section>
-
-        <aside className="grid content-start gap-5">
-          <Leaderboard entries={leaderboard} />
-          <section className="rounded-lg bg-ink p-5 text-white">
-            <h2 className="text-xl font-black">סטטוס Production</h2>
-            <dl className="mt-4 grid gap-3 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt>Auth</dt>
-                <dd className="font-bold text-sun">Google</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Database</dt>
-                <dd className="font-bold text-sun">Firestore</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Images</dt>
-                <dd className="font-bold text-sun">Storage</dd>
-              </div>
-            </dl>
+        ) : (
+          <section className="rounded-lg border-2 border-ink bg-paper p-5 shadow-[8px_8px_0_#161616]">
+            <h3 className="text-xl font-black">צריך להתחבר כדי לפרסם דו&quot;ח</h3>
+            <p className="mt-2 text-sm leading-6 text-steel">
+              אפשר לקרוא ולדרג דוחות רק לאחר כניסה. פרסום דו&quot;ח חדש מחייב חשבון Google.
+            </p>
+            <button
+              onClick={signIn}
+              disabled={isLoading}
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-md bg-mint px-4 font-bold text-white disabled:bg-ink/25"
+            >
+              כניסה עם Google
+            </button>
           </section>
-        </aside>
-      </div>
+        )}
+        <RecentReports
+          currentUserId={user?.uid}
+          isRating={isRating}
+          onRate={handleRate}
+          ratingSummaries={ratingSummaries}
+          reports={reports}
+        />
+      </section>
     </main>
   );
 }

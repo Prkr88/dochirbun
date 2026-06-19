@@ -5,12 +5,15 @@ import {
   limit,
   orderBy,
   query,
-  serverTimestamp
+  serverTimestamp,
+  setDoc,
+  where,
+  doc
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 import { firebaseStorage, firestore } from "@/lib/firebase/client";
-import type { NewReportInput, Report } from "@/types/report";
+import type { NewReportInput, Report, ReportRating, ReportRatingSummary, ReportUserRating } from "@/types/report";
 
 interface CreateReportOptions {
   userId: string;
@@ -87,4 +90,54 @@ export async function listRecentReports(maxReports = 20): Promise<Report[]> {
       createdAt: data.createdAt?.toDate?.().toISOString?.() ?? new Date().toISOString()
     };
   });
+}
+
+export async function rateReport(reportId: string, userId: string, rating: ReportRating) {
+  const ratingRef = doc(firestore(), "reportRatings", `${reportId}_${userId}`);
+
+  return setDoc(
+    ratingRef,
+    {
+      reportId,
+      userId,
+      rating,
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+}
+
+export async function listRatingsForReports(reportIds: string[], currentUserId?: string) {
+  const uniqueReportIds = Array.from(new Set(reportIds.filter(Boolean))).slice(0, 30);
+
+  if (uniqueReportIds.length === 0) {
+    return {};
+  }
+
+  const ratings = collection(firestore(), "reportRatings");
+  const snapshot = await getDocs(query(ratings, where("reportId", "in", uniqueReportIds)));
+  const userRatings = snapshot.docs.map((ratingDoc) => ratingDoc.data() as ReportUserRating);
+
+  return summarizeRatings(userRatings, currentUserId);
+}
+
+export function summarizeRatings(ratings: ReportUserRating[], currentUserId?: string) {
+  const summaries: Record<string, ReportRatingSummary> = {};
+
+  for (const userRating of ratings) {
+    const summary = summaries[userRating.reportId] ?? { average: 0, count: 0 };
+
+    summary.average = Number(
+      ((summary.average * summary.count + userRating.rating) / (summary.count + 1)).toFixed(1)
+    );
+    summary.count += 1;
+
+    if (userRating.userId === currentUserId) {
+      summary.currentUserRating = userRating.rating;
+    }
+
+    summaries[userRating.reportId] = summary;
+  }
+
+  return summaries;
 }

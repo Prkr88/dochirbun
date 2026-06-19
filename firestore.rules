@@ -103,6 +103,21 @@ service cloud.firestore {
       allow update, delete: if isReportOwner();
     }
 
+    match /reportRatings/{ratingId} {
+      allow read: if true;
+      allow create, update: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['reportId', 'userId', 'rating', 'updatedAt'])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.reportId is string
+        && request.resource.data.reportId.size() > 0
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.updatedAt == request.time
+        && ratingId == request.resource.data.reportId + '_' + request.auth.uid;
+      allow delete: if false;
+    }
+
     match /users/{userId} {
       allow read: if true;
       allow create, update: if isSignedIn() && request.auth.uid == userId;
