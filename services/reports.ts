@@ -51,6 +51,14 @@ function stripUndefined<T extends Record<string, unknown>>(value: T) {
   return Object.fromEntries(Object.entries(value).filter(([, fieldValue]) => fieldValue !== undefined));
 }
 
+export async function listReportsByUser(userId: string): Promise<Report[]> {
+  const reports = collection(firestore(), "reports");
+  const snapshot = await getDocs(query(reports, where("userId", "==", userId)));
+  return snapshot.docs
+    .map((reportDoc) => mapReportDocument(reportDoc.id, reportDoc.data()))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 export async function listRecentReports(maxReports = 20): Promise<Report[]> {
   const reports = collection(firestore(), "reports");
   const snapshot = await getDocs(query(reports, orderBy("createdAt", "desc"), limit(maxReports)));

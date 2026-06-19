@@ -30,6 +30,7 @@ export type Aftermath =
   | "prefer-not";
 
 export interface PoopReportInput {
+  isAnonymous?: boolean;
   reporterName: string;
   serviceNumber?: string;
   role: string;

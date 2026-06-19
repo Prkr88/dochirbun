@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import type { NewReportInput, ReportRating } from "@/types/report";
 
 export const initialPoopReportForm: NewReportInput = {
+  isAnonymous: false,
   reporterName: "",
   serviceNumber: "",
   role: "",
@@ -32,7 +33,7 @@ export const initialPoopReportForm: NewReportInput = {
 
 export function validatePoopReport(form: NewReportInput) {
   return (
-    form.reporterName.trim().length >= 2 &&
+    (form.isAnonymous || form.reporterName.trim().length >= 2) &&
     form.role.trim().length >= 2 &&
     form.notes.trim().length >= 2 &&
     (form.facility !== "improvised" || Boolean(form.improvisedFacilityDescription?.trim())) &&
@@ -53,6 +54,13 @@ export function useReportForm() {
     reset: () => setForm(initialPoopReportForm),
     updateField: <TKey extends keyof NewReportInput>(key: TKey, value: NewReportInput[TKey]) =>
       setForm((current) => ({ ...current, [key]: value })),
-    setRating: (rating: ReportRating) => setForm((current) => ({ ...current, rating }))
+    setRating: (rating: ReportRating) => setForm((current) => ({ ...current, rating })),
+    toggleAnonymous: (anonymous: boolean) =>
+      setForm((current) => ({
+        ...current,
+        isAnonymous: anonymous,
+        reporterName: anonymous ? "אנונימי" : "",
+        serviceNumber: anonymous ? "" : current.serviceNumber
+      }))
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Send, Star } from "lucide-react";
+import { Camera, EyeOff, Send, Star } from "lucide-react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 
@@ -112,7 +112,7 @@ interface ReportFormProps {
 }
 
 export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFormProps) {
-  const { form, isValid, reset, setRating, updateField } = useReportForm();
+  const { form, isValid, reset, setRating, toggleAnonymous, updateField } = useReportForm();
   const [imageFile, setImageFile] = useState<File>();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -138,9 +138,20 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         מטעמי נוחיות, השאלות כתובות בלשון זכר אך פונות לכל המינים. נא להרפות.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <TextInput label="שם" value={form.reporterName} onChange={(value) => updateField("reporterName", value)} required />
-        <TextInput label="מ.א." value={form.serviceNumber ?? ""} onChange={(value) => updateField("serviceNumber", value)} />
+      <label className="flex cursor-pointer items-center gap-3 rounded-md border border-ink/15 bg-white p-3 hover:bg-paper">
+        <input
+          type="checkbox"
+          checked={form.isAnonymous ?? false}
+          onChange={(event) => toggleAnonymous(event.target.checked)}
+          className="size-4 accent-mint"
+        />
+        <EyeOff className="size-4 text-steel" />
+        <span className="text-sm font-bold">הגשה בעילום שם — השם לא יוצג בפומבי</span>
+      </label>
+
+      <div className={`grid gap-4 sm:grid-cols-3 ${form.isAnonymous ? "opacity-40 pointer-events-none select-none" : ""}`}>
+        <TextInput label="שם" value={form.isAnonymous ? "אנונימי" : form.reporterName} onChange={(value) => updateField("reporterName", value)} required={!form.isAnonymous} />
+        <TextInput label="מ.א." value={form.isAnonymous ? "" : (form.serviceNumber ?? "")} onChange={(value) => updateField("serviceNumber", value)} />
         <TextInput label="תפקיד" value={form.role} onChange={(value) => updateField("role", value)} required />
       </div>
 

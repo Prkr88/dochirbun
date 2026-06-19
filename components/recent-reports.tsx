@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Clock, Droplets, Star } from "lucide-react";
+import { Clock, Droplets, EyeOff, Star } from "lucide-react";
 
 import { playFartSound } from "@/lib/fart-sound";
 import { reportLabels } from "@/lib/report-labels";
@@ -37,7 +37,15 @@ export function RecentReports({
           <article key={report.id} className="grid gap-4 rounded-lg border border-ink/15 bg-white p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-black">{report.reporterName}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-black">{report.reporterName}</h3>
+                  {report.isAnonymous ? (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-ink/10 px-2 py-0.5 text-xs font-bold text-steel">
+                      <EyeOff className="size-3" />
+                      עילום שם
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-1 text-sm text-steel">{report.role}</p>
               </div>
               <span className="inline-flex items-center gap-1 rounded-md bg-sun px-2 py-1 text-sm font-black">

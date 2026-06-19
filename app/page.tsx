@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ClipboardList, Plus, Star, Trophy } from "lucide-react";
+import { BarChart2, ClipboardList, Plus, Star, Trophy } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { AuthBar } from "@/components/auth-bar";
@@ -153,6 +153,13 @@ export default function Home() {
           >
             <Star className="size-5" />
             הדירוגים שלי
+          </Link>
+          <Link
+            href="/my-stats"
+            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-md border border-ink/25 bg-white px-4 font-bold text-steel"
+          >
+            <BarChart2 className="size-5" />
+            הסטטיסטיקה שלי
           </Link>
         </div>
         <Image
