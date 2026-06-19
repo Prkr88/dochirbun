@@ -132,7 +132,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-5 rounded-lg border-2 border-ink bg-paper p-5 shadow-[8px_8px_0_#161616]">
+    <form onSubmit={handleSubmit} noValidate className="grid gap-5 rounded-lg border-2 border-ink bg-paper p-5 shadow-[8px_8px_0_#161616]">
       <p className="rounded-md bg-sun/25 p-3 text-sm font-bold leading-6 text-ink">
         טופס זה נכתב בהומור. אין לטופס שום שימוש רציני והוא לא נועד לשפר שירותים.
         מטעמי נוחיות, השאלות כתובות בלשון זכר אך פונות לכל המינים. נא להרפות.
@@ -256,6 +256,9 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         />
       </label>
 
+      {!isValid && !isSubmitting ? (
+        <MissingFieldsHint form={form} />
+      ) : null}
       <button
         type="submit"
         disabled={!isValid || !isAuthenticated || isSubmitting}
@@ -265,6 +268,27 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         {isSubmitting ? "שומר..." : "שליחת דו\"ח חירבון"}
       </button>
     </form>
+  );
+}
+
+function MissingFieldsHint({ form }: { form: NewReportInput }) {
+  const missing = [
+    !form.isAnonymous && form.reporterName.trim().length < 2 && "שם",
+    !form.isAnonymous && form.role.trim().length < 2 && "תפקיד",
+    form.notes.trim().length < 2 && "הערות",
+    form.facility === "improvised" && !form.improvisedFacilityDescription?.trim() && "תיאור מתקן",
+    form.entertainment === "other" && !form.entertainmentOther?.trim() && "פרט בידור",
+    form.color === "other" && !form.colorOther?.trim() && "פרט צבע",
+    form.foodResidue === "other" && !form.foodResidueOther?.trim() && "פרט שאריות",
+    form.smell === "other" && !form.smellOther?.trim() && "פרט ריח",
+  ].filter(Boolean) as string[];
+
+  if (missing.length === 0) return null;
+
+  return (
+    <p className="text-sm font-bold text-steel">
+      חסר: {missing.join(", ")}
+    </p>
   );
 }
 
