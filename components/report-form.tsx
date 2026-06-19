@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, EyeOff, Send, Star } from "lucide-react";
+import { Camera, EyeOff, Loader2, Send, Star } from "lucide-react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 
@@ -261,7 +261,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         disabled={!isValid || !isAuthenticated || isSubmitting}
         className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-mint px-4 font-bold text-white disabled:cursor-not-allowed disabled:bg-ink/25"
       >
-        <Send className="size-5" />
+        {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
         {isSubmitting ? "שומר..." : "שליחת דו\"ח חירבון"}
       </button>
     </form>
