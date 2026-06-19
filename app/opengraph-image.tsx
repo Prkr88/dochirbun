@@ -7,6 +7,10 @@ export const size = {
 };
 export const contentType = "image/png";
 
+function visualRtl(value: string) {
+  return Array.from(value).reverse().join("");
+}
+
 export default function Image() {
   return new ImageResponse(
     (
@@ -44,7 +48,7 @@ export default function Image() {
               padding: "16px 24px"
             }}
           >
-            כי כל חוויה ראויה לתיעוד.
+            {visualRtl("כי כל חוויה ראויה לתיעוד.")}
           </div>
           <div
             style={{
@@ -56,7 +60,7 @@ export default function Image() {
               lineHeight: 1
             }}
           >
-            דו&quot;חירבון
+            {visualRtl('דו"חירבון')}
           </div>
           <div
             style={{
@@ -68,7 +72,7 @@ export default function Image() {
               lineHeight: 1.25
             }}
           >
-            מערכת הומוריסטית לתיעוד חירבונים, דירוגים ולוח מדווחים.
+            {visualRtl("מערכת הומוריסטית לתיעוד חירבונים, דירוגים ולוח מדווחים.")}
           </div>
         </div>
         <div
