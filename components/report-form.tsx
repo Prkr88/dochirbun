@@ -114,17 +114,35 @@ interface ReportFormProps {
 export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFormProps) {
   const { form, isValid, reset, setRating, toggleAnonymous, updateField } = useReportForm();
   const [imageFile, setImageFile] = useState<File>();
+  const [attempted, setAttempted] = useState(false);
+
+  const errors = {
+    name: attempted && !form.isAnonymous && form.reporterName.trim().length < 2,
+    role: attempted && !form.isAnonymous && form.role.trim().length < 2,
+    notes: attempted && form.notes.trim().length < 2,
+    improvisedFacility: attempted && form.facility === "improvised" && !form.improvisedFacilityDescription?.trim(),
+    entertainmentOther: attempted && form.entertainment === "other" && !form.entertainmentOther?.trim(),
+    colorOther: attempted && form.color === "other" && !form.colorOther?.trim(),
+    foodResidueOther: attempted && form.foodResidue === "other" && !form.foodResidueOther?.trim(),
+    smellOther: attempted && form.smell === "other" && !form.smellOther?.trim(),
+  };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!isValid || !isAuthenticated) {
+    if (!isValid) {
+      setAttempted(true);
+      return;
+    }
+
+    if (!isAuthenticated) {
       return;
     }
 
     const succeeded = await onSubmit(form, imageFile);
     if (succeeded) {
       setImageFile(undefined);
+      setAttempted(false);
       reset();
     }
   }
@@ -153,10 +171,10 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className={`grid gap-4 sm:col-span-2 sm:grid-cols-2 ${form.isAnonymous ? "pointer-events-none select-none opacity-40" : ""}`}>
-          <TextInput label="שם" value={form.isAnonymous ? "אנונימי" : form.reporterName} onChange={(value) => updateField("reporterName", value)} required={!form.isAnonymous} />
+          <TextInput label="שם" value={form.isAnonymous ? "אנונימי" : form.reporterName} onChange={(value) => updateField("reporterName", value)} required={!form.isAnonymous} hasError={errors.name} />
           <TextInput label="מ.א." value={form.isAnonymous ? "" : (form.serviceNumber ?? "")} onChange={(value) => updateField("serviceNumber", value)} />
         </div>
-        <TextInput label="תפקיד" value={form.role} onChange={(value) => updateField("role", value)} required={!form.isAnonymous} />
+        <TextInput label="תפקיד" value={form.role} onChange={(value) => updateField("role", value)} required={!form.isAnonymous} hasError={errors.role} />
       </div>
 
       <RadioGroup label="המתקן" value={form.facility} options={fieldGroups.facility} onChange={(value) => updateField("facility", value)} />
@@ -166,6 +184,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
           value={form.improvisedFacilityDescription ?? ""}
           onChange={(value) => updateField("improvisedFacilityDescription", value)}
           required
+          hasError={errors.improvisedFacility}
         />
       ) : null}
 
@@ -180,7 +199,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
             }
           }} />
           {form.entertainment === "other" ? (
-            <OtherInput label="בידור אחר" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} />
+            <OtherInput label="בידור אחר" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} hasError={errors.entertainmentOther} />
           ) : form.entertainment === "newspaper" ? (
             <OtherInput label="שם העיתון" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} />
           ) : form.entertainment === "book" ? (
@@ -190,7 +209,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         <div className="grid gap-2">
           <RadioGroup label="צבע" value={form.color} options={fieldGroups.color} onChange={(value) => updateField("color", value)} />
           {form.color === "other" ? (
-            <OtherInput label="צבע אחר" value={form.colorOther ?? ""} onChange={(value) => updateField("colorOther", value)} />
+            <OtherInput label="צבע אחר" value={form.colorOther ?? ""} onChange={(value) => updateField("colorOther", value)} hasError={errors.colorOther} />
           ) : null}
         </div>
       </div>
@@ -208,7 +227,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         <div className="grid gap-2">
           <RadioGroup label="שאריות מזון" value={form.foodResidue} options={fieldGroups.foodResidue} onChange={(value) => updateField("foodResidue", value)} />
           {form.foodResidue === "other" ? (
-            <OtherInput label="שאריות מזון אחרות" value={form.foodResidueOther ?? ""} onChange={(value) => updateField("foodResidueOther", value)} />
+            <OtherInput label="שאריות מזון אחרות" value={form.foodResidueOther ?? ""} onChange={(value) => updateField("foodResidueOther", value)} hasError={errors.foodResidueOther} />
           ) : null}
         </div>
         <RadioGroup label="אופי החרא" value={form.stoolCharacter} options={fieldGroups.stoolCharacter} onChange={(value) => updateField("stoolCharacter", value)} />
@@ -218,7 +237,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         <div className="grid gap-2">
           <RadioGroup label="ריח" value={form.smell} options={fieldGroups.smell} onChange={(value) => updateField("smell", value)} />
           {form.smell === "other" ? (
-            <OtherInput label="ריח אחר" value={form.smellOther ?? ""} onChange={(value) => updateField("smellOther", value)} />
+            <OtherInput label="ריח אחר" value={form.smellOther ?? ""} onChange={(value) => updateField("smellOther", value)} hasError={errors.smellOther} />
           ) : null}
         </div>
         <RadioGroup label="ריבועי נייר" value={form.paperSquares} options={fieldGroups.paperSquares} onChange={(value) => updateField("paperSquares", value)} />
@@ -249,21 +268,24 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
       </div>
 
       <label className="grid gap-2">
-        <span className="text-sm font-bold text-steel">הערות, הגיגים או תובנות</span>
+        <span className={`text-sm font-bold ${errors.notes ? "text-red-600" : "text-steel"}`}>
+          הערות, הגיגים או תובנות *
+        </span>
         <textarea
           value={form.notes}
           onChange={(event) => updateField("notes", event.target.value)}
-          className="min-h-32 resize-y rounded-md border border-ink/25 bg-white p-4 outline-none focus:border-mint"
-          required
+          className={`min-h-32 resize-y rounded-md border p-4 outline-none focus:border-mint ${
+            errors.notes ? "border-red-400 bg-red-50" : "border-ink/25 bg-white"
+          }`}
         />
       </label>
 
-      {!isValid && !isSubmitting ? (
+      {attempted && !isValid && !isSubmitting ? (
         <MissingFieldsHint form={form} />
       ) : null}
       <button
         type="submit"
-        disabled={!isValid || !isAuthenticated || isSubmitting}
+        disabled={!isAuthenticated || isSubmitting}
         className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-mint px-4 font-bold text-white disabled:cursor-not-allowed disabled:bg-ink/25"
       >
         {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
@@ -295,6 +317,7 @@ function MissingFieldsHint({ form }: { form: NewReportInput }) {
 }
 
 function TextInput({
+  hasError,
   label,
   onChange,
   required,
@@ -303,36 +326,40 @@ function TextInput({
   label: string;
   value: string;
   required?: boolean;
+  hasError?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-bold text-steel">
+      <span className={`text-sm font-bold ${hasError ? "text-red-600" : "text-steel"}`}>
         {label}
         {required ? " *" : null}
       </span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        required={required}
-        className="h-12 rounded-md border border-ink/25 bg-white px-4 outline-none focus:border-mint"
+        className={`h-12 rounded-md border px-4 outline-none focus:border-mint ${
+          hasError ? "border-red-400 bg-red-50" : "border-ink/25 bg-white"
+        }`}
       />
     </label>
   );
 }
 
 function OtherInput({
+  hasError,
   label,
   onChange,
   value
 }: {
   label: string;
   value: string;
+  hasError?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
     <div className="rounded-md border border-mint/40 bg-white p-3">
-      <TextInput label={label} value={value} onChange={onChange} required />
+      <TextInput label={label} value={value} onChange={onChange} required hasError={hasError} />
     </div>
   );
 }
