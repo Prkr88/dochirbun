@@ -108,7 +108,7 @@ const ratingLabels: Record<ReportRating, string> = {
 interface ReportFormProps {
   isAuthenticated: boolean;
   isSubmitting: boolean;
-  onSubmit: (report: NewReportInput, imageFile?: File) => void | Promise<void>;
+  onSubmit: (report: NewReportInput, imageFile?: File) => Promise<boolean>;
 }
 
 export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFormProps) {
@@ -122,9 +122,11 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
       return;
     }
 
-    await onSubmit(form, imageFile);
-    setImageFile(undefined);
-    reset();
+    const succeeded = await onSubmit(form, imageFile);
+    if (succeeded) {
+      setImageFile(undefined);
+      reset();
+    }
   }
 
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
