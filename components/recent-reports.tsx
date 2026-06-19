@@ -24,6 +24,11 @@ export function RecentReports({
   return (
     <section className="grid gap-3">
       <h2 className="text-xl font-black">דוחות חירבון אחרונים</h2>
+      {reports.length === 0 ? (
+        <p className="rounded-lg border border-ink/15 bg-white p-4 text-sm font-bold text-steel">
+          אין עדיין דוחות. הדו&quot;ח הראשון יופיע כאן אחרי שליחה.
+        </p>
+      ) : null}
       {reports.map((report) => {
         const ratingSummary = ratingSummaries[report.id];
 

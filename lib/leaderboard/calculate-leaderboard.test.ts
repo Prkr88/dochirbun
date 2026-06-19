@@ -38,9 +38,25 @@ describe("calculateLeaderboard", () => {
     ]);
 
     expect(entries).toMatchObject([
-      { userId: "beta", reportCount: 2, averageRating: 3 },
-      { userId: "alpha", reportCount: 1, averageRating: 5 },
-      { userId: "gamma", reportCount: 1, averageRating: 5 }
+      { userId: "beta", displayName: "מדווח", reportCount: 2, averageRating: 3 },
+      { userId: "alpha", displayName: "מדווח", reportCount: 1, averageRating: 5 },
+      { userId: "gamma", displayName: "מדווח", reportCount: 1, averageRating: 5 }
+    ]);
+  });
+
+  it("uses reader rating summaries when available", () => {
+    const entries = calculateLeaderboard(
+      [report({ id: "1", userId: "alpha", rating: 1, reporterName: "אלפא" })],
+      {
+        "1": {
+          average: 4.5,
+          count: 2
+        }
+      }
+    );
+
+    expect(entries).toMatchObject([
+      { userId: "alpha", displayName: "אלפא", reportCount: 1, averageRating: 4.5 }
     ]);
   });
 });

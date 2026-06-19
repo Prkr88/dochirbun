@@ -17,20 +17,24 @@ export function Leaderboard({ entries }: LeaderboardProps) {
       </div>
 
       <div className="grid gap-3">
-        {entries.map((entry, index) => (
-          <div key={entry.userId} className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 rounded-md border border-ink/15 bg-paper p-3">
-            <span className="grid size-9 place-items-center rounded-md bg-ink text-sm font-black text-white">
-              {index + 1}
-            </span>
-            <div>
-              <p className="font-bold">{entry.displayName}</p>
-              <p className="text-sm text-steel">{entry.reportCount} דוחות</p>
+        {entries.length > 0 ? (
+          entries.map((entry, index) => (
+            <div key={entry.userId} className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 rounded-md border border-ink/15 bg-paper p-3">
+              <span className="grid size-9 place-items-center rounded-md bg-ink text-sm font-black text-white">
+                {index + 1}
+              </span>
+              <div>
+                <p className="font-bold">{entry.displayName}</p>
+                <p className="text-sm text-steel">{entry.reportCount} דוחות</p>
+              </div>
+              <span className="rounded-md bg-mint px-3 py-1 text-sm font-black text-white">
+                {entry.averageRating.toFixed(1)}
+              </span>
             </div>
-            <span className="rounded-md bg-mint px-3 py-1 text-sm font-black text-white">
-              {entry.averageRating.toFixed(1)}
-            </span>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="rounded-md bg-paper p-4 text-sm font-bold text-steel">אין עדיין דוחות להצגה.</p>
+        )}
       </div>
     </section>
   );

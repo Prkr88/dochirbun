@@ -5,14 +5,17 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Leaderboard } from "@/components/leaderboard";
-import { seededReports } from "@/lib/demo-reports";
 import { calculateLeaderboard } from "@/lib/leaderboard/calculate-leaderboard";
-import { listRecentReports } from "@/services/reports";
-import type { Report } from "@/types/report";
+import { listRatingsForReports, listRecentReports } from "@/services/reports";
+import type { Report, ReportRatingSummary } from "@/types/report";
 
 export default function LeaderboardPage() {
-  const [reports, setReports] = useState<Report[]>(seededReports);
-  const entries = useMemo(() => calculateLeaderboard(reports), [reports]);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [ratingSummaries, setRatingSummaries] = useState<Record<string, ReportRatingSummary>>({});
+  const entries = useMemo(
+    () => calculateLeaderboard(reports, ratingSummaries),
+    [ratingSummaries, reports]
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -21,12 +24,18 @@ export default function LeaderboardPage() {
       try {
         const nextReports = await listRecentReports(100);
 
-        if (isActive && nextReports.length > 0) {
+        if (isActive) {
           setReports(nextReports);
+          const summaries = await listRatingsForReports(nextReports.map((report) => report.id));
+
+          if (isActive) {
+            setRatingSummaries(summaries);
+          }
         }
       } catch {
         if (isActive) {
-          setReports(seededReports);
+          setReports([]);
+          setRatingSummaries({});
         }
       }
     }

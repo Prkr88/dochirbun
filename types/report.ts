@@ -78,6 +78,7 @@ export interface ReportUserRating {
   reportId: string;
   userId: string;
   rating: ReportRating;
+  updatedAt?: string;
 }
 
 export interface ReportRatingSummary {

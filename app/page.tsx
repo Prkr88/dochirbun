@@ -2,24 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ClipboardList, Trophy } from "lucide-react";
+import { ClipboardList, Plus, Star, Trophy } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { AuthBar } from "@/components/auth-bar";
 import { RecentReports } from "@/components/recent-reports";
 import { ReportForm } from "@/components/report-form";
 import { useAuth } from "@/hooks/use-auth";
-import { seededReports } from "@/lib/demo-reports";
 import { createReport, listRatingsForReports, listRecentReports, rateReport } from "@/services/reports";
 import type { NewReportInput, Report, ReportRating, ReportRatingSummary } from "@/types/report";
 
 export default function Home() {
   const { isLoading, signIn, signOutUser, user } = useAuth();
-  const [reports, setReports] = useState<Report[]>(seededReports);
+  const [reports, setReports] = useState<Report[]>([]);
   const [ratingSummaries, setRatingSummaries] = useState<Record<string, ReportRatingSummary>>({});
   const [status, setStatus] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRating, setIsRating] = useState(false);
+  const [isCreatingReport, setIsCreatingReport] = useState(false);
 
   const refreshRatings = useCallback(
     async (nextReports: Report[]) => {
@@ -43,12 +43,11 @@ export default function Home() {
           return;
         }
 
-        const visibleReports = nextReports.length > 0 ? nextReports : seededReports;
-        setReports(visibleReports);
-        await refreshRatings(visibleReports);
+        setReports(nextReports);
+        await refreshRatings(nextReports);
       } catch {
         if (isActive) {
-          setReports(seededReports);
+          setStatus("טעינת הדוחות נכשלה. נסה לרענן את העמוד.");
         }
       }
     }
@@ -93,6 +92,7 @@ export default function Home() {
       setReports(nextReports);
       await refreshRatings(nextReports);
       setStatus("הדו\"ח נשמר בהצלחה.");
+      setIsCreatingReport(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : "שמירת הדו\"ח נכשלה.";
       setStatus(
@@ -115,19 +115,8 @@ export default function Home() {
     setStatus(undefined);
 
     try {
-      if (reportId.startsWith("seed-")) {
-        setRatingSummaries((current) => ({
-          ...current,
-          [reportId]: {
-            average: rating,
-            count: 1,
-            currentUserRating: rating
-          }
-        }));
-      } else {
-        await rateReport(reportId, user.uid, rating);
-        await refreshRatings(reports);
-      }
+      await rateReport(reportId, user.uid, rating);
+      await refreshRatings(reports);
     } catch {
       setStatus("שמירת הדירוג נכשלה. נסה שוב.");
     } finally {
@@ -154,6 +143,13 @@ export default function Home() {
             <Trophy className="size-5" />
             לוח המדווחים
           </Link>
+          <Link
+            href="/my-ratings"
+            className="mx-2 mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-md border border-ink/25 bg-white px-4 font-bold text-steel"
+          >
+            <Star className="size-5" />
+            הדירוגים שלי
+          </Link>
         </div>
         <Image
           src="/receipt-stack.svg"
@@ -168,27 +164,6 @@ export default function Home() {
       <section className="mx-auto grid w-full max-w-4xl content-start gap-5">
         <AuthBar isLoading={isLoading} onSignIn={signIn} onSignOut={signOutUser} user={user} />
         {status ? <p className="rounded-md bg-white p-3 text-sm font-bold text-steel">{status}</p> : null}
-        <div>
-          <h2 className="text-2xl font-black">דו&quot;ח חדש</h2>
-          <p className="mt-2 text-sm text-steel">כל השדות המסומנים נדרשים. הטופס מיועד לחירבונים בלבד.</p>
-        </div>
-        {user ? (
-          <ReportForm isAuthenticated={Boolean(user)} isSubmitting={isSubmitting} onSubmit={handleSubmit} />
-        ) : (
-          <section className="rounded-lg border-2 border-ink bg-paper p-5 shadow-[8px_8px_0_#161616]">
-            <h3 className="text-xl font-black">צריך להתחבר כדי לפרסם דו&quot;ח</h3>
-            <p className="mt-2 text-sm leading-6 text-steel">
-              אפשר לקרוא ולדרג דוחות רק לאחר כניסה. פרסום דו&quot;ח חדש מחייב חשבון Google.
-            </p>
-            <button
-              onClick={signIn}
-              disabled={isLoading}
-              className="mt-4 inline-flex h-11 items-center justify-center rounded-md bg-mint px-4 font-bold text-white disabled:bg-ink/25"
-            >
-              כניסה עם Google
-            </button>
-          </section>
-        )}
         <RecentReports
           currentUserId={user?.uid}
           isRating={isRating}
@@ -196,6 +171,45 @@ export default function Home() {
           ratingSummaries={ratingSummaries}
           reports={reports}
         />
+        <div className="flex justify-center">
+          <button
+            onClick={() => {
+              if (!user) {
+                setStatus("צריך להתחבר עם Google לפני יצירת דו\"ח.");
+                return;
+              }
+
+              setIsCreatingReport((current) => !current);
+            }}
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-mint px-5 font-bold text-white"
+          >
+            <Plus className="size-5" />
+            {isCreatingReport ? "סגירת הטופס" : "יצירת דו\"ח חדש"}
+          </button>
+        </div>
+        {isCreatingReport ? (
+          user ? (
+            <>
+              <div>
+                <h2 className="text-2xl font-black">דו&quot;ח חדש</h2>
+                <p className="mt-2 text-sm text-steel">כל השדות המסומנים נדרשים. הטופס מיועד לחירבונים בלבד.</p>
+              </div>
+              <ReportForm isAuthenticated={Boolean(user)} isSubmitting={isSubmitting} onSubmit={handleSubmit} />
+            </>
+          ) : (
+            <section className="rounded-lg border-2 border-ink bg-paper p-5 shadow-[8px_8px_0_#161616]">
+              <h3 className="text-xl font-black">צריך להתחבר כדי לפרסם דו&quot;ח</h3>
+              <p className="mt-2 text-sm leading-6 text-steel">פרסום דו&quot;ח חדש מחייב חשבון Google.</p>
+              <button
+                onClick={signIn}
+                disabled={isLoading}
+                className="mt-4 inline-flex h-11 items-center justify-center rounded-md bg-mint px-4 font-bold text-white disabled:bg-ink/25"
+              >
+                כניסה עם Google
+              </button>
+            </section>
+          )
+        ) : null}
       </section>
     </main>
   );

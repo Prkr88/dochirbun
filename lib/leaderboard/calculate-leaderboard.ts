@@ -1,13 +1,26 @@
-import type { LeaderboardEntry, Report } from "@/types/report";
+import type { LeaderboardEntry, Report, ReportRatingSummary } from "@/types/report";
 
-export function calculateLeaderboard(reports: Report[]): LeaderboardEntry[] {
-  const users = new Map<string, { totalRating: number; reportCount: number }>();
+export function calculateLeaderboard(
+  reports: Report[],
+  ratingSummaries: Record<string, ReportRatingSummary> = {}
+): LeaderboardEntry[] {
+  const users = new Map<
+    string,
+    { displayName: string; totalRating: number; reportCount: number }
+  >();
 
   for (const report of reports) {
-    const current = users.get(report.userId) ?? { totalRating: 0, reportCount: 0 };
+    const current = users.get(report.userId) ?? {
+      displayName: report.reporterName,
+      totalRating: 0,
+      reportCount: 0
+    };
+    const readerRating = ratingSummaries[report.id];
+    const score = readerRating?.count ? readerRating.average : report.rating;
 
     users.set(report.userId, {
-      totalRating: current.totalRating + report.rating,
+      displayName: current.displayName,
+      totalRating: current.totalRating + score,
       reportCount: current.reportCount + 1
     });
   }
@@ -15,7 +28,7 @@ export function calculateLeaderboard(reports: Report[]): LeaderboardEntry[] {
   return Array.from(users.entries())
     .map(([userId, stats]) => ({
       userId,
-      displayName: `מדווח ${userId.slice(0, 4).toUpperCase()}`,
+      displayName: stats.displayName,
       reportCount: stats.reportCount,
       averageRating: Number((stats.totalRating / stats.reportCount).toFixed(1))
     }))
