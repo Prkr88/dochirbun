@@ -135,7 +135,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
     <form onSubmit={handleSubmit} className="grid gap-5 rounded-lg border-2 border-ink bg-paper p-5 shadow-[8px_8px_0_#161616]">
       <p className="rounded-md bg-sun/25 p-3 text-sm font-bold leading-6 text-ink">
         טופס זה נכתב בהומור. אין לטופס שום שימוש רציני והוא לא נועד לשפר שירותים.
-        מטעמי נוחות, השאלות כתובות בלשון זכר אך פונות לכל המינים. נא להרפות.
+        מטעמי נוחיות, השאלות כתובות בלשון זכר אך פונות לכל המינים. נא להרפות.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -157,12 +157,19 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
       <div className="grid gap-5 lg:grid-cols-2">
         <RadioGroup label="זמן ישיבה" value={form.sittingTime} options={fieldGroups.sittingTime} onChange={(value) => updateField("sittingTime", value)} />
         <RadioGroup label="פיפי" value={form.peeTiming} options={fieldGroups.peeTiming} onChange={(value) => updateField("peeTiming", value)} />
-        <RadioGroup label="בידור" value={form.entertainment} options={fieldGroups.entertainment} onChange={(value) => updateField("entertainment", value)} />
-        <RadioGroup label="צבע" value={form.color} options={fieldGroups.color} onChange={(value) => updateField("color", value)} />
+        <div className="grid gap-2">
+          <RadioGroup label="בידור" value={form.entertainment} options={fieldGroups.entertainment} onChange={(value) => updateField("entertainment", value)} />
+          {form.entertainment === "other" ? (
+            <OtherInput label="בידור אחר" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} />
+          ) : null}
+        </div>
+        <div className="grid gap-2">
+          <RadioGroup label="צבע" value={form.color} options={fieldGroups.color} onChange={(value) => updateField("color", value)} />
+          {form.color === "other" ? (
+            <OtherInput label="צבע אחר" value={form.colorOther ?? ""} onChange={(value) => updateField("colorOther", value)} />
+          ) : null}
+        </div>
       </div>
-
-      {form.entertainment === "other" ? <TextInput label="בידור אחר" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} required /> : null}
-      {form.color === "other" ? <TextInput label="צבע אחר" value={form.colorOther ?? ""} onChange={(value) => updateField("colorOther", value)} required /> : null}
 
       <label className="grid gap-2">
         <span className="text-sm font-bold text-steel">ניתן לצרף תמונה</span>
@@ -174,18 +181,25 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
       </label>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <RadioGroup label="שאריות מזון" value={form.foodResidue} options={fieldGroups.foodResidue} onChange={(value) => updateField("foodResidue", value)} />
+        <div className="grid gap-2">
+          <RadioGroup label="שאריות מזון" value={form.foodResidue} options={fieldGroups.foodResidue} onChange={(value) => updateField("foodResidue", value)} />
+          {form.foodResidue === "other" ? (
+            <OtherInput label="שאריות מזון אחרות" value={form.foodResidueOther ?? ""} onChange={(value) => updateField("foodResidueOther", value)} />
+          ) : null}
+        </div>
         <RadioGroup label="אופי החרא" value={form.stoolCharacter} options={fieldGroups.stoolCharacter} onChange={(value) => updateField("stoolCharacter", value)} />
         <RadioGroup label="סגנון נפילה" value={form.dropStyle} options={fieldGroups.dropStyle} onChange={(value) => updateField("dropStyle", value)} />
         <RadioGroup label="רעש הנפילה" value={form.dropSound} options={fieldGroups.dropSound} onChange={(value) => updateField("dropSound", value)} />
         <RadioGroup label="אופי היציאה" value={form.exitCharacter} options={fieldGroups.exitCharacter} onChange={(value) => updateField("exitCharacter", value)} />
-        <RadioGroup label="ריח" value={form.smell} options={fieldGroups.smell} onChange={(value) => updateField("smell", value)} />
+        <div className="grid gap-2">
+          <RadioGroup label="ריח" value={form.smell} options={fieldGroups.smell} onChange={(value) => updateField("smell", value)} />
+          {form.smell === "other" ? (
+            <OtherInput label="ריח אחר" value={form.smellOther ?? ""} onChange={(value) => updateField("smellOther", value)} />
+          ) : null}
+        </div>
         <RadioGroup label="ריבועי נייר" value={form.paperSquares} options={fieldGroups.paperSquares} onChange={(value) => updateField("paperSquares", value)} />
         <RadioGroup label="לאחר מעשה" value={form.aftermath} options={fieldGroups.aftermath} onChange={(value) => updateField("aftermath", value)} />
       </div>
-
-      {form.foodResidue === "other" ? <TextInput label="שאריות מזון אחרות" value={form.foodResidueOther ?? ""} onChange={(value) => updateField("foodResidueOther", value)} required /> : null}
-      {form.smell === "other" ? <TextInput label="ריח אחר" value={form.smellOther ?? ""} onChange={(value) => updateField("smellOther", value)} required /> : null}
 
       <div className="grid gap-3">
         <span className="text-sm font-bold text-steel">דירוג כללי לחוויה</span>
@@ -256,6 +270,22 @@ function TextInput({
         className="h-12 rounded-md border border-ink/25 bg-white px-4 outline-none focus:border-mint"
       />
     </label>
+  );
+}
+
+function OtherInput({
+  label,
+  onChange,
+  value
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="rounded-md border border-mint/40 bg-white p-3">
+      <TextInput label={label} value={value} onChange={onChange} required />
+    </div>
   );
 }
 

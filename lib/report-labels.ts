@@ -11,6 +11,13 @@ export const reportLabels = {
     "up-to-15": "עד 15 דקות",
     "over-15": "רבע שעה ומעלה"
   },
+  entertainment: {
+    none: "לא היה",
+    phone: "סלולרי",
+    newspaper: "עיתון",
+    book: "ספר",
+    other: "אחר"
+  },
   color: {
     green: "ירוק",
     yellowish: "צהבהב",
@@ -25,6 +32,13 @@ export const reportLabels = {
     liquid: "נוזלי",
     "foamy-flow": "שצף קצף",
     mixed: "מעורב"
+  },
+  foodResidue: {
+    none: "ללא",
+    corn: "תירס",
+    tomato: "עגבניות",
+    leaves: "עלים",
+    other: "אחר"
   },
   dropStyle: {
     "direct-hit": "בול פגיעה",
