@@ -200,7 +200,7 @@ Current policy:
 - Only authenticated Google users can create reports.
 - A report can only be created with `userId` equal to `request.auth.uid` and `userEmail` equal to the auth token email.
 - All poop-report enum fields, notes, rating, and optional fields are validated at write time.
-- Images can only be uploaded by the owning user under `reports/{userId}/`, must be images, and must be 10 MB or smaller.
+- Images can only be uploaded by the owning user under `reports/{userId}/`, must be images, and must be 2 MB or smaller.
 - Only the owner can update or delete a report.
 - Users can create or update only their own profile document.
 - Profile deletion is denied by default.

@@ -38,8 +38,8 @@ export async function createReport({ imageFile, input, userEmail, userId, userPh
 }
 
 async function uploadReportImage(userId: string, file: File) {
-  if (file.size > 10 * 1024 * 1024) {
-    throw new Error("Image file must be 10 MB or smaller.");
+  if (file.size > 2 * 1024 * 1024) {
+    throw new Error("Image file must be 2 MB or smaller.");
   }
 
   const storageRef = ref(firebaseStorage(), `reports/${userId}/${crypto.randomUUID()}-${file.name}`);
