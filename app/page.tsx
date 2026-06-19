@@ -94,7 +94,7 @@ export default function Home() {
 
       setReports(nextReports);
       await refreshRatings(nextReports);
-      playFartSound();
+      playFartSound(input.rating);
       setCelebrationTrigger((current) => current + 1);
       setStatus("הדו\"ח נשמר בהצלחה.");
       setIsCreatingReport(false);

@@ -1,10 +1,18 @@
-let fartAudio: HTMLAudioElement | undefined;
+import type { ReportRating } from "@/types/report";
 
-export function playFartSound() {
-  fartAudio ??= new Audio("/apebble-fart-5-228245.mp3");
-  fartAudio.currentTime = 0;
+const fartAudioCache = new Map<ReportRating, HTMLAudioElement>();
 
-  void fartAudio.play().catch(() => {
+export function playFartSound(rating: ReportRating = 3) {
+  let audio = fartAudioCache.get(rating);
+
+  if (!audio) {
+    audio = new Audio(`/${rating}-star-fart.mp3`);
+    fartAudioCache.set(rating, audio);
+  }
+
+  audio.currentTime = 0;
+
+  void audio.play().catch(() => {
     // Browsers may block audio if the click gesture is interrupted.
   });
 }

@@ -141,7 +141,7 @@ function ReportRatingControl({
               type="button"
               disabled={isRating}
               onClick={() => {
-                playFartSound();
+                playFartSound(rating);
                 onRate?.(reportId, rating);
               }}
               className={`grid size-10 place-items-center rounded-md border transition disabled:cursor-wait ${
