@@ -73,6 +73,7 @@ export interface LeaderboardEntry {
   displayName: string;
   reportCount: number;
   averageRating: number;
+  latestReport?: Pick<Report, "facility" | "sittingTime" | "entertainment" | "stoolCharacter" | "smell" | "aftermath" | "rating">;
 }
 
 export interface ReportUserRating {

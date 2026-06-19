@@ -6,7 +6,7 @@ export function calculateLeaderboard(
 ): LeaderboardEntry[] {
   const users = new Map<
     string,
-    { displayName: string; totalRating: number; reportCount: number }
+    { displayName: string; totalRating: number; reportCount: number; latestReport?: Report }
   >();
 
   for (const report of reports) {
@@ -17,11 +17,15 @@ export function calculateLeaderboard(
     };
     const readerRating = ratingSummaries[report.id];
     const score = readerRating?.count ? readerRating.average : report.rating;
+    const isNewer =
+      !current.latestReport ||
+      new Date(report.createdAt) > new Date(current.latestReport.createdAt);
 
     users.set(report.userId, {
       displayName: current.displayName,
       totalRating: current.totalRating + score,
-      reportCount: current.reportCount + 1
+      reportCount: current.reportCount + 1,
+      latestReport: isNewer ? report : current.latestReport
     });
   }
 
@@ -30,7 +34,18 @@ export function calculateLeaderboard(
       userId,
       displayName: stats.displayName,
       reportCount: stats.reportCount,
-      averageRating: Number((stats.totalRating / stats.reportCount).toFixed(1))
+      averageRating: Number((stats.totalRating / stats.reportCount).toFixed(1)),
+      latestReport: stats.latestReport
+        ? {
+            facility: stats.latestReport.facility,
+            sittingTime: stats.latestReport.sittingTime,
+            entertainment: stats.latestReport.entertainment,
+            stoolCharacter: stats.latestReport.stoolCharacter,
+            smell: stats.latestReport.smell,
+            aftermath: stats.latestReport.aftermath,
+            rating: stats.latestReport.rating
+          }
+        : undefined
     }))
     .sort(
       (a, b) =>
