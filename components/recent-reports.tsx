@@ -61,7 +61,13 @@ export function RecentReports({
             <div className="grid gap-2 text-sm leading-6 text-ink/80 sm:grid-cols-2">
               <ReportFact label="מתקן" value={reportLabels.facility[report.facility]} />
               <ReportFact label="זמן ישיבה" value={reportLabels.sittingTime[report.sittingTime]} />
-              <ReportFact label="בידור" value={report.entertainment === "other" ? report.entertainmentOther : reportLabels.entertainment[report.entertainment]} />
+              <ReportFact label="בידור" value={
+                report.entertainment === "other"
+                  ? report.entertainmentOther
+                  : (report.entertainment === "newspaper" || report.entertainment === "book") && report.entertainmentOther
+                  ? `${reportLabels.entertainment[report.entertainment]} — ${report.entertainmentOther}`
+                  : reportLabels.entertainment[report.entertainment]
+              } />
               <ReportFact label="צבע" value={report.color === "other" ? report.colorOther : reportLabels.color[report.color]} />
               <ReportFact label="שאריות מזון" value={report.foodResidue === "other" ? report.foodResidueOther : reportLabels.foodResidue[report.foodResidue]} />
               <ReportFact label="אופי" value={reportLabels.stoolCharacter[report.stoolCharacter]} />

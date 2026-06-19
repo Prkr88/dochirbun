@@ -98,6 +98,7 @@ export default function Home() {
       setCelebrationTrigger((current) => current + 1);
       setStatus("הדו\"ח נשמר בהצלחה.");
       setIsCreatingReport(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "שמירת הדו\"ח נכשלה.";
       setStatus(

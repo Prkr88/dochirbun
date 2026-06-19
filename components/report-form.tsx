@@ -154,7 +154,7 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
           <TextInput label="שם" value={form.isAnonymous ? "אנונימי" : form.reporterName} onChange={(value) => updateField("reporterName", value)} required={!form.isAnonymous} />
           <TextInput label="מ.א." value={form.isAnonymous ? "" : (form.serviceNumber ?? "")} onChange={(value) => updateField("serviceNumber", value)} />
         </div>
-        <TextInput label="תפקיד" value={form.role} onChange={(value) => updateField("role", value)} required />
+        <TextInput label="תפקיד" value={form.role} onChange={(value) => updateField("role", value)} required={!form.isAnonymous} />
       </div>
 
       <RadioGroup label="המתקן" value={form.facility} options={fieldGroups.facility} onChange={(value) => updateField("facility", value)} />
@@ -171,9 +171,18 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         <RadioGroup label="זמן ישיבה" value={form.sittingTime} options={fieldGroups.sittingTime} onChange={(value) => updateField("sittingTime", value)} />
         <RadioGroup label="פיפי" value={form.peeTiming} options={fieldGroups.peeTiming} onChange={(value) => updateField("peeTiming", value)} />
         <div className="grid gap-2">
-          <RadioGroup label="בידור" value={form.entertainment} options={fieldGroups.entertainment} onChange={(value) => updateField("entertainment", value)} />
+          <RadioGroup label="בידור" value={form.entertainment} options={fieldGroups.entertainment} onChange={(value) => {
+            updateField("entertainment", value);
+            if (value !== "other" && value !== "newspaper" && value !== "book") {
+              updateField("entertainmentOther", "");
+            }
+          }} />
           {form.entertainment === "other" ? (
             <OtherInput label="בידור אחר" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} />
+          ) : form.entertainment === "newspaper" ? (
+            <OtherInput label="שם העיתון" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} />
+          ) : form.entertainment === "book" ? (
+            <OtherInput label="שם הספר" value={form.entertainmentOther ?? ""} onChange={(value) => updateField("entertainmentOther", value)} />
           ) : null}
         </div>
         <div className="grid gap-2">

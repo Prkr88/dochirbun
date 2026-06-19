@@ -34,7 +34,7 @@ export const initialPoopReportForm: NewReportInput = {
 export function validatePoopReport(form: NewReportInput) {
   return (
     (form.isAnonymous || form.reporterName.trim().length >= 2) &&
-    form.role.trim().length >= 2 &&
+    (form.isAnonymous || form.role.trim().length >= 2) &&
     form.notes.trim().length >= 2 &&
     (form.facility !== "improvised" || Boolean(form.improvisedFacilityDescription?.trim())) &&
     (form.entertainment !== "other" || Boolean(form.entertainmentOther?.trim())) &&
