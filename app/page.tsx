@@ -10,6 +10,7 @@ import { PoopCelebration } from "@/components/poop-celebration";
 import { RecentReports } from "@/components/recent-reports";
 import { ReportForm } from "@/components/report-form";
 import { useAuth } from "@/hooks/use-auth";
+import { playFartSound } from "@/lib/fart-sound";
 import { createReport, listRatingsForReports, listRecentReports, rateReport } from "@/services/reports";
 import type { NewReportInput, Report, ReportRating, ReportRatingSummary } from "@/types/report";
 
@@ -93,6 +94,8 @@ export default function Home() {
 
       setReports(nextReports);
       await refreshRatings(nextReports);
+      playFartSound();
+      setCelebrationTrigger((current) => current + 1);
       setStatus("הדו\"ח נשמר בהצלחה.");
       setIsCreatingReport(false);
     } catch (error) {

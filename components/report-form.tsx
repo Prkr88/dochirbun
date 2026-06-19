@@ -149,9 +149,11 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
         <span className="text-sm font-bold">הגשה בעילום שם — השם לא יוצג בפומבי</span>
       </label>
 
-      <div className={`grid gap-4 sm:grid-cols-3 ${form.isAnonymous ? "opacity-40 pointer-events-none select-none" : ""}`}>
-        <TextInput label="שם" value={form.isAnonymous ? "אנונימי" : form.reporterName} onChange={(value) => updateField("reporterName", value)} required={!form.isAnonymous} />
-        <TextInput label="מ.א." value={form.isAnonymous ? "" : (form.serviceNumber ?? "")} onChange={(value) => updateField("serviceNumber", value)} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className={`grid gap-4 sm:col-span-2 sm:grid-cols-2 ${form.isAnonymous ? "pointer-events-none select-none opacity-40" : ""}`}>
+          <TextInput label="שם" value={form.isAnonymous ? "אנונימי" : form.reporterName} onChange={(value) => updateField("reporterName", value)} required={!form.isAnonymous} />
+          <TextInput label="מ.א." value={form.isAnonymous ? "" : (form.serviceNumber ?? "")} onChange={(value) => updateField("serviceNumber", value)} />
+        </div>
         <TextInput label="תפקיד" value={form.role} onChange={(value) => updateField("role", value)} required />
       </div>
 
