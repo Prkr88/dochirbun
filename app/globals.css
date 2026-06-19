@@ -36,3 +36,56 @@ textarea {
   background: #f3b33d;
   color: #161616;
 }
+
+@keyframes poop-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -4rem, 0) rotate(0deg) scale(0.8);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 110vh, 0) rotate(540deg) scale(1.1);
+  }
+}
+
+@keyframes poop-sway-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -5rem, 0) rotate(0deg);
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  45% {
+    transform: translate3d(calc(var(--rotate-direction) * 2.5rem), 45vh, 0) rotate(calc(var(--rotate-direction) * 220deg));
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--rotate-direction) * -2rem), 112vh, 0) rotate(calc(var(--rotate-direction) * 620deg));
+  }
+}
+
+@keyframes poop-burst-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(0.2);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translate3d(calc(var(--rotate-direction) * 5rem), -16vh, 0) rotate(calc(var(--rotate-direction) * 160deg)) scale(1.25);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--rotate-direction) * 2rem), 65vh, 0) rotate(calc(var(--rotate-direction) * 520deg)) scale(0.9);
+  }
+}

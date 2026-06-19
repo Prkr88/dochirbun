@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Clock, Droplets, Star } from "lucide-react";
 
+import { playFartSound } from "@/lib/fart-sound";
 import { reportLabels } from "@/lib/report-labels";
 import type { Report, ReportRating, ReportRatingSummary } from "@/types/report";
 
@@ -123,7 +124,10 @@ function ReportRatingControl({
               key={rating}
               type="button"
               disabled={isRating}
-              onClick={() => onRate?.(reportId, rating)}
+              onClick={() => {
+                playFartSound();
+                onRate?.(reportId, rating);
+              }}
               className={`grid size-10 place-items-center rounded-md border transition disabled:cursor-wait ${
                 summary?.currentUserRating && rating <= summary.currentUserRating
                   ? "border-ink bg-sun text-ink"

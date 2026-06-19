@@ -6,6 +6,7 @@ import { ClipboardList, Plus, Star, Trophy } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { AuthBar } from "@/components/auth-bar";
+import { PoopCelebration } from "@/components/poop-celebration";
 import { RecentReports } from "@/components/recent-reports";
 import { ReportForm } from "@/components/report-form";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,6 +21,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRating, setIsRating] = useState(false);
   const [isCreatingReport, setIsCreatingReport] = useState(false);
+  const [celebrationTrigger, setCelebrationTrigger] = useState(0);
 
   const refreshRatings = useCallback(
     async (nextReports: Report[]) => {
@@ -117,6 +119,7 @@ export default function Home() {
     try {
       await rateReport(reportId, user.uid, rating);
       await refreshRatings(reports);
+      setCelebrationTrigger((current) => current + 1);
     } catch {
       setStatus("שמירת הדירוג נכשלה. נסה שוב.");
     } finally {
@@ -126,6 +129,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto grid min-h-screen w-full max-w-7xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
+      <PoopCelebration trigger={celebrationTrigger} />
       <header className="grid gap-6 border-b-2 border-ink pb-6 lg:grid-cols-[1fr_22rem] lg:items-center">
         <div>
           <div className="mb-4 inline-flex items-center gap-2 rounded-md bg-ink px-3 py-2 text-sm font-bold text-white">
