@@ -108,13 +108,14 @@ const ratingLabels: Record<ReportRating, string> = {
 interface ReportFormProps {
   isAuthenticated: boolean;
   isSubmitting: boolean;
-  onSubmit: (report: NewReportInput, imageFile?: File) => Promise<boolean>;
+  onSubmit: (report: NewReportInput, imageFile?: File) => Promise<string | null>;
 }
 
 export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFormProps) {
   const { form, isValid, reset, setRating, toggleAnonymous, updateField } = useReportForm();
   const [imageFile, setImageFile] = useState<File>();
   const [attempted, setAttempted] = useState(false);
+  const [submitError, setSubmitError] = useState<string>();
 
   const errors = {
     name: attempted && !form.isAnonymous && form.reporterName.trim().length < 2,
@@ -139,11 +140,15 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
       return;
     }
 
-    const succeeded = await onSubmit(form, imageFile);
-    if (succeeded) {
+    setSubmitError(undefined);
+    const error = await onSubmit(form, imageFile);
+    if (error === null) {
       setImageFile(undefined);
       setAttempted(false);
+      setSubmitError(undefined);
       reset();
+    } else {
+      setSubmitError(error);
     }
   }
 
@@ -282,6 +287,11 @@ export function ReportForm({ isAuthenticated, isSubmitting, onSubmit }: ReportFo
 
       {attempted && !isValid && !isSubmitting ? (
         <MissingFieldsHint form={form} />
+      ) : null}
+      {submitError ? (
+        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm font-bold text-red-700">
+          שגיאה: {submitError}
+        </p>
       ) : null}
       <button
         type="submit"

@@ -62,10 +62,9 @@ export default function Home() {
     };
   }, [refreshRatings]);
 
-  async function handleSubmit(input: NewReportInput, imageFile?: File): Promise<boolean> {
+  async function handleSubmit(input: NewReportInput, imageFile?: File): Promise<string | null> {
     if (!user?.email) {
-      setStatus("צריך להתחבר עם Google לפני שליחת דו\"ח.");
-      return false;
+      return "צריך להתחבר עם Google לפני שליחת דו\"ח.";
     }
 
     setIsSubmitting(true);
@@ -99,15 +98,16 @@ export default function Home() {
       setStatus("הדו\"ח נשמר בהצלחה.");
       setIsCreatingReport(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
-      return true;
+      return null;
     } catch (error) {
+      console.error("createReport failed:", error);
       const message = error instanceof Error ? error.message : "שמירת הדו\"ח נכשלה.";
-      setStatus(
+      const userMessage =
         message.includes("storage") || message.includes("Storage")
           ? "שמירת התמונה נכשלה כי Firebase Storage עדיין לא פעיל. אפשר לשלוח דו\"ח בלי תמונה או להפעיל Storage בהמשך."
-          : message
-      );
-      return false;
+          : message;
+      setStatus(userMessage);
+      return userMessage;
     } finally {
       setIsSubmitting(false);
     }

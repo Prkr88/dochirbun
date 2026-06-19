@@ -34,6 +34,7 @@ service cloud.firestore {
         'userId',
         'userEmail',
         'userPhotoUrl',
+        'isAnonymous',
         'reporterName',
         'serviceNumber',
         'role',
@@ -65,7 +66,7 @@ service cloud.firestore {
       && isOptionalString('userPhotoUrl', 2000)
       && isValidString(request.resource.data.reporterName, 2, 80)
       && isOptionalString('serviceNumber', 40)
-      && isValidString(request.resource.data.role, 2, 80)
+      && (request.resource.data.get('isAnonymous', false) == true || isValidString(request.resource.data.role, 2, 80))
       && isOneOf(request.resource.data.facility, ['organized-toilet', 'chemical-toilet', 'field-squat', 'improvised'])
       && isOptionalString('improvisedFacilityDescription', 240)
       && (request.resource.data.facility != 'improvised' || hasValidString('improvisedFacilityDescription', 1, 240))
