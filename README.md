@@ -116,6 +116,16 @@ FIREBASE_ADMIN_CLIENT_EMAIL
 FIREBASE_ADMIN_PRIVATE_KEY
 ```
 
+Email notification variables:
+
+```text
+RESEND_API_KEY
+EMAIL_FROM
+NEXT_PUBLIC_APP_URL
+```
+
+`EMAIL_FROM` must be a verified sender in Resend, for example `דו"חירבון <notifications@your-domain.com>`.
+
 Store these as GitHub Secrets when needed by workflows and as Vercel Environment Variables for deployments.
 
 ## Architecture

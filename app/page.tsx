@@ -11,6 +11,7 @@ import { RecentReports } from "@/components/recent-reports";
 import { ReportForm } from "@/components/report-form";
 import { useAuth } from "@/hooks/use-auth";
 import { playFartSound } from "@/lib/fart-sound";
+import { notifyReportRating } from "@/services/email/rating-notifications";
 import { createReport, listRatingsForReports, listRecentReports, rateReport } from "@/services/reports";
 import type { NewReportInput, Report, ReportRating, ReportRatingSummary } from "@/types/report";
 
@@ -125,6 +126,9 @@ export default function Home() {
     try {
       await rateReport(reportId, user.uid, rating);
       await refreshRatings(reports);
+      notifyReportRating({ rating, reportId, user }).catch((error) => {
+        console.warn("Rating notification failed:", error);
+      });
       setCelebrationTrigger((current) => current + 1);
     } catch {
       setStatus("שמירת הדירוג נכשלה. נסה שוב.");
